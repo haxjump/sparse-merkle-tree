@@ -28,10 +28,15 @@ impl Value for H256 {
 
 /// Trait for customize backend storage
 pub trait Store<V> {
-    fn get_branch(&self, branch_key: &BranchKey) -> Result<Option<BranchNode>, Error>;
-    fn get_leaf(&self, leaf_key: &H256) -> Result<Option<V>, Error>;
     fn insert_branch(&mut self, node_key: BranchKey, branch: BranchNode) -> Result<(), Error>;
-    fn insert_leaf(&mut self, leaf_key: H256, leaf: V) -> Result<(), Error>;
+    fn get_branch(&self, branch_key: &BranchKey) -> Result<Option<BranchNode>, Error>;
     fn remove_branch(&mut self, node_key: &BranchKey) -> Result<(), Error>;
+
+    fn insert_leaf(&mut self, leaf_key: H256, leaf: V) -> Result<(), Error>;
+    fn get_leaf(&self, leaf_key: &H256) -> Result<Option<V>, Error>;
     fn remove_leaf(&mut self, leaf_key: &H256) -> Result<(), Error>;
+
+    // return the old root
+    fn update_root(&mut self, new_root: H256) -> Result<H256, Error>;
+    fn get_root(&self) -> Result<H256, Error>;
 }

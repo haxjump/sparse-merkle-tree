@@ -8,6 +8,7 @@ use crate::{
 
 #[derive(Debug, Clone, Default)]
 pub struct DefaultStore<V> {
+    root: H256,
     branches_map: Map<BranchKey, BranchNode>,
     leaves_map: Map<H256, V>,
 }
@@ -47,6 +48,16 @@ impl<V: Clone> Store<V> for DefaultStore<V> {
     fn remove_leaf(&mut self, leaf_key: &H256) -> Result<(), Error> {
         self.leaves_map.remove(leaf_key);
         Ok(())
+    }
+
+    fn update_root(&mut self, new_root: H256) -> Result<H256, Error> {
+        let old = self.root;
+        self.root = new_root;
+        Ok(old)
+    }
+
+    fn get_root(&self) -> Result<H256, Error> {
+        Ok(self.root)
     }
 }
 

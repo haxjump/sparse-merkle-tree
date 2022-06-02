@@ -1,16 +1,13 @@
-#[macro_use]
-extern crate criterion;
-
-use criterion::Criterion;
+use criterion::{criterion_group, criterion_main, Criterion};
 use rand::{thread_rng, Rng};
-use sparse_merkle_tree::{
-    blake2b::Blake2bHasher, default_store::DefaultStore, tree::SparseMerkleTree, H256,
+use xsmt::{
+    blake3_hasher::Blake3Hasher, default_store::DefaultStore, tree::SparseMerkleTree, H256,
 };
 
 const TARGET_LEAVES_COUNT: usize = 20;
 
 #[allow(clippy::upper_case_acronyms)]
-type SMT = SparseMerkleTree<Blake2bHasher, H256, DefaultStore<H256>>;
+type SMT = SparseMerkleTree<Blake3Hasher, H256, DefaultStore<H256>>;
 
 fn random_h256(rng: &mut impl Rng) -> H256 {
     let mut buf = [0u8; 32];
@@ -79,7 +76,7 @@ fn bench(c: &mut Criterion) {
             .unwrap();
         let root = smt.root();
         b.iter(|| {
-            let valid = proof.clone().verify::<Blake2bHasher>(root, leaves.clone());
+            let valid = proof.clone().verify::<Blake3Hasher>(root, leaves.clone());
             assert!(valid.expect("verify result"));
         });
     });

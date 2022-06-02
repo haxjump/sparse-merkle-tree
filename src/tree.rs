@@ -54,11 +54,13 @@ pub struct SparseMerkleTree<H, V, S> {
 impl<H: Hasher + Default, V: Value, S: Store<V>> SparseMerkleTree<H, V, S> {
     /// Build a merkle tree from root and store
     pub fn new(root: H256, store: S) -> SparseMerkleTree<H, V, S> {
-        SparseMerkleTree {
+        let mut smt = SparseMerkleTree {
             root,
             store,
             phantom: PhantomData,
-        }
+        };
+        smt.store.update_root(root).unwrap();
+        smt
     }
 
     /// Merkle root
@@ -136,7 +138,7 @@ impl<H: Hasher + Default, V: Value, S: Store<V>> SparseMerkleTree<H, V, S> {
         }
 
         self.root = current_node.hash::<H>();
-        Ok(&self.root)
+        self.store.update_root(self.root).map(|_| &self.root)
     }
 
     /// Update multiple leaves at once
@@ -213,7 +215,7 @@ impl<H: Hasher + Default, V: Value, S: Store<V>> SparseMerkleTree<H, V, S> {
 
         assert!(nodes.len() == 1);
         self.root = nodes[0].1.hash::<H>();
-        Ok(&self.root)
+        self.store.update_root(self.root).map(|_| &self.root)
     }
 
     /// Get value of a leaf

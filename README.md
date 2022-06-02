@@ -1,7 +1,6 @@
-# Sparse merkle tree
+# SMT
 
-[![Crates.io](https://img.shields.io/crates/v/sparse-merkle-tree.svg)](https://crates.io/crates/sparse-merkle-tree)
-[Docs](https://docs.rs/sparse-merkle-tree)
+> ported from [sparse_merkle_tree](https://crates.io/crates/sparse-merkle-tree).
 
 An optimized sparse merkle tree.
 
