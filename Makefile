@@ -1,16 +1,19 @@
-default: fmt clippy test bench-test check
+default: fmt lint test
 
-test:
-	cargo test --release --workspace --all-features
-
-bench-test:
-	cargo bench -- --test
-
-clippy:
+lint:
 	cargo clippy --workspace
+	cargo clippy --workspace --no-default-features
 
 fmt:
 	cargo fmt
 
-check:
-	cargo check --no-default-features
+test:
+	rm -rf ~/.vsdb ${VSDB_BASE_DIR}
+	cargo test --release --workspace --all-features
+
+testall: test
+	cargo bench -- --test
+	cargo test --release --workspace --all-features --ignored
+
+bench:
+	cargo bench

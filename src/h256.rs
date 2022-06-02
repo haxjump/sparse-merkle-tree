@@ -1,7 +1,9 @@
 use core::cmp::Ordering;
+use serde::{Deserialize, Serialize};
+use vsdb::{impl_vs_methods_nope, VsMgmt};
 
 /// Represent 256 bits
-#[derive(Eq, PartialEq, Debug, Default, Hash, Clone, Copy)]
+#[derive(Eq, PartialEq, Debug, Default, Hash, Clone, Copy, Deserialize, Serialize)]
 pub struct H256([u8; 32]);
 
 const ZERO: H256 = H256([0u8; 32]);
@@ -84,6 +86,10 @@ impl H256 {
 
         target
     }
+}
+
+impl VsMgmt for H256 {
+    impl_vs_methods_nope! {}
 }
 
 impl PartialOrd for H256 {

@@ -1,6 +1,6 @@
-use crate::{string, H256};
+use crate::H256;
 
-pub type Result<T> = ::core::result::Result<T, Error>;
+pub type Result<T> = core::result::Result<T, Error>;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Error {
@@ -10,7 +10,7 @@ pub enum Error {
     EmptyProof,
     EmptyKeys,
     IncorrectNumberOfLeaves { expected: usize, actual: usize },
-    Store(string::String),
+    Store(String),
     CorruptedStack,
     NonSiblings,
     InvalidCode(u8),

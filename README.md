@@ -1,4 +1,4 @@
-# SMT
+# xSMT
 
 > ported from [sparse_merkle_tree](https://crates.io/crates/sparse-merkle-tree).
 

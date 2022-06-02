@@ -3,14 +3,14 @@ use crate::{
     merge::{merge, MergeValue},
     merkle_proof::MerkleProof,
     traits::{Hasher, Store, Value},
-    vec::Vec,
     H256, MAX_STACK_SIZE,
 };
-use core::cmp::Ordering;
-use core::marker::PhantomData;
+use core::{cmp::Ordering, marker::PhantomData};
+use serde::{Deserialize, Serialize};
+use vsdb::{Vs, VsMgmt};
 
 /// The branch key
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Deserialize, Serialize)]
 pub struct BranchKey {
     pub height: u8,
     pub node_key: H256,
@@ -37,40 +37,38 @@ impl Ord for BranchKey {
 }
 
 /// A branch in the SMT
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Deserialize, Serialize)]
 pub struct BranchNode {
     pub left: MergeValue,
     pub right: MergeValue,
 }
 
 /// Sparse merkle tree
-#[derive(Default, Debug)]
-pub struct SparseMerkleTree<H, V, S> {
+#[derive(Vs, Default, Debug)]
+pub struct SparseMerkleTree<H, V, S: VsMgmt> {
     store: S,
-    root: H256,
     phantom: PhantomData<(H, V)>,
 }
 
-impl<H: Hasher + Default, V: Value, S: Store<V>> SparseMerkleTree<H, V, S> {
+impl<H: Hasher, V: Value<H>, S: Store<V>> SparseMerkleTree<H, V, S> {
     /// Build a merkle tree from root and store
-    pub fn new(root: H256, store: S) -> SparseMerkleTree<H, V, S> {
+    pub fn new(store: S) -> SparseMerkleTree<H, V, S> {
         let mut smt = SparseMerkleTree {
-            root,
             store,
             phantom: PhantomData,
         };
-        smt.store.update_root(root).unwrap();
+        smt.store.update_root(H256::zero()).unwrap();
         smt
     }
 
     /// Merkle root
-    pub fn root(&self) -> &H256 {
-        &self.root
+    pub fn root(&self) -> H256 {
+        self.store.get_root().unwrap()
     }
 
     /// Check empty of the tree
     pub fn is_empty(&self) -> bool {
-        self.root.is_zero()
+        self.root().is_zero()
     }
 
     /// Destroy current tree and retake store
@@ -90,7 +88,7 @@ impl<H: Hasher + Default, V: Value, S: Store<V>> SparseMerkleTree<H, V, S> {
 
     /// Update a leaf, return new merkle root
     /// set to zero value to delete a key
-    pub fn update(&mut self, key: H256, value: V) -> Result<&H256> {
+    pub fn update(&mut self, key: H256, value: V) -> Result<H256> {
         // compute and store new leaf
         let node = MergeValue::from_h256(value.to_h256());
         // notice when value is zero the leaf is deleted, so we do not need to store it
@@ -137,12 +135,12 @@ impl<H: Hasher + Default, V: Value, S: Store<V>> SparseMerkleTree<H, V, S> {
             current_node = merge::<H>(height, &parent_key, &left, &right);
         }
 
-        self.root = current_node.hash::<H>();
-        self.store.update_root(self.root).map(|_| &self.root)
+        let root = current_node.hash::<H>();
+        self.store.update_root(root).map(|_| root)
     }
 
     /// Update multiple leaves at once
-    pub fn update_all(&mut self, mut leaves: Vec<(H256, V)>) -> Result<&H256> {
+    pub fn update_all(&mut self, mut leaves: Vec<(H256, V)>) -> Result<H256> {
         // Dedup(only keep the last of each key) and sort leaves
         leaves.reverse();
         leaves.sort_by_key(|(a, _)| *a);
@@ -213,18 +211,19 @@ impl<H: Hasher + Default, V: Value, S: Store<V>> SparseMerkleTree<H, V, S> {
             nodes = next_nodes;
         }
 
-        assert!(nodes.len() == 1);
-        self.root = nodes[0].1.hash::<H>();
-        self.store.update_root(self.root).map(|_| &self.root)
+        debug_assert_eq!(nodes.len(), 1);
+
+        let root = nodes[0].1.hash::<H>();
+        self.store.update_root(root).map(|_| root)
     }
 
     /// Get value of a leaf
     /// return zero value if leaf not exists
-    pub fn get(&self, key: &H256) -> Result<V> {
+    pub fn get(&self, key: &H256) -> Result<Option<V>> {
         if self.is_empty() {
-            return Ok(V::zero());
+            return Ok(None);
         }
-        Ok(self.store.get_leaf(key)?.unwrap_or_else(V::zero))
+        self.store.get_leaf(key)
     }
 
     /// Generate merkle proof
@@ -299,12 +298,16 @@ impl<H: Hasher + Default, V: Value, S: Store<V>> SparseMerkleTree<H, V, S> {
                     }
                 }
             }
+
             debug_assert!(stack_top < MAX_STACK_SIZE);
+
             stack_fork_height[stack_top] = fork_height;
             stack_top += 1;
             leaf_index += 1;
         }
-        assert_eq!(stack_top, 1);
+
+        debug_assert_eq!(stack_top, 1);
+
         Ok(MerkleProof::new(leaves_bitmap, proof))
     }
 }

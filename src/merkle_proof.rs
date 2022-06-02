@@ -2,7 +2,6 @@ use crate::{
     error::{Error, Result},
     merge::{merge, MergeValue},
     traits::Hasher,
-    vec::Vec,
     H256, MAX_STACK_SIZE,
 };
 
@@ -99,7 +98,7 @@ impl MerkleProof {
                                 zero_bits,
                                 zero_count,
                             } => {
-                                let mut buffer = crate::vec![*zero_count];
+                                let mut buffer = vec![*zero_count];
                                 buffer.extend_from_slice(base_node.as_slice());
                                 buffer.extend_from_slice(zero_bits.as_slice());
                                 (Some(0x51), Some(buffer))
@@ -161,7 +160,10 @@ impl MerkleProof {
     ///
     /// return EmptyProof error when proof is empty
     /// return CorruptedProof error when proof is invalid
-    pub fn compute_root<H: Hasher + Default>(self, leaves: Vec<(H256, H256)>) -> Result<H256> {
+    pub fn compute_root<H: Hasher + Default>(
+        self,
+        leaves: Vec<(H256, Option<H256>)>,
+    ) -> Result<H256> {
         self.compile(leaves.iter().map(|(key, _value)| *key).collect())?
             .compute_root::<H>(leaves)
     }
@@ -170,11 +172,11 @@ impl MerkleProof {
     /// see compute_root_from_proof
     pub fn verify<H: Hasher + Default>(
         self,
-        root: &H256,
-        leaves: Vec<(H256, H256)>,
+        root: H256,
+        leaves: Vec<(H256, Option<H256>)>,
     ) -> Result<bool> {
         let calculated_root = self.compute_root::<H>(leaves)?;
-        Ok(&calculated_root == root)
+        Ok(calculated_root == root)
     }
 }
 
@@ -183,7 +185,10 @@ impl MerkleProof {
 pub struct CompiledMerkleProof(pub Vec<u8>);
 
 impl CompiledMerkleProof {
-    pub fn compute_root<H: Hasher + Default>(&self, mut leaves: Vec<(H256, H256)>) -> Result<H256> {
+    pub fn compute_root<H: Hasher + Default>(
+        &self,
+        mut leaves: Vec<(H256, Option<H256>)>,
+    ) -> Result<H256> {
         leaves.sort_unstable_by_key(|(k, _v)| *k);
         let mut program_index = 0;
         let mut leaf_index = 0;
@@ -198,7 +203,12 @@ impl CompiledMerkleProof {
                         return Err(Error::CorruptedStack);
                     }
                     let (k, v) = leaves[leaf_index];
-                    stack.push((0, k, MergeValue::from_h256(v)));
+                    stack.push((
+                        0,
+                        k,
+                        v.map(MergeValue::from_h256)
+                            .unwrap_or_else(MergeValue::zero),
+                    ));
                     leaf_index += 1;
                 }
                 // P : hash stack top item with sibling node in proof
@@ -343,11 +353,11 @@ impl CompiledMerkleProof {
 
     pub fn verify<H: Hasher + Default>(
         &self,
-        root: &H256,
-        leaves: Vec<(H256, H256)>,
+        root: H256,
+        leaves: Vec<(H256, Option<H256>)>,
     ) -> Result<bool> {
         let calculated_root = self.compute_root::<H>(leaves)?;
-        Ok(&calculated_root == root)
+        Ok(calculated_root == root)
     }
 }
 

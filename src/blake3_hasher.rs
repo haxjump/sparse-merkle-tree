@@ -17,4 +17,13 @@ impl Hasher for Blake3Hasher {
         hash.copy_from_slice(self.0.finalize().as_bytes());
         hash.into()
     }
+
+    fn hash(bytes: &[u8]) -> H256 {
+        let mut hasher = Self::default();
+        hasher.0.update(bytes);
+
+        let mut hash = [0u8; 32];
+        hash.copy_from_slice(hasher.0.finalize().as_bytes());
+        hash.into()
+    }
 }

@@ -87,4 +87,5 @@ criterion_group!(
     config = Criterion::default().sample_size(10);
     targets = bench
 );
+
 criterion_main!(benches);
