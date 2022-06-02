@@ -13,7 +13,7 @@ test:
 
 testall: test
 	cargo bench -- --test
-	cargo test --release --workspace --all-features --ignored
+	cargo test --release --workspace --all-features -- --ignored
 
 bench:
 	cargo bench

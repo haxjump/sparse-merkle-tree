@@ -1,12 +1,9 @@
-use crate::{
-    blake3_hasher::Blake3Hasher, default_store::DefaultStore, error::Error, merge::MergeValue,
-    MerkleProof, SparseMerkleTree, *,
-};
+use crate::{blake3_hasher::Blake3Hasher, error::Error, merge::MergeValue, MerkleProof, VsSmt, *};
 use proptest::prelude::*;
 use rand::prelude::{Rng, SliceRandom};
 
 #[allow(clippy::upper_case_acronyms)]
-type SMT = SparseMerkleTree<Blake3Hasher, H256, DefaultStore<H256>>;
+type SMT = VsSmt<H256>;
 
 #[test]
 fn test_default_root() {
