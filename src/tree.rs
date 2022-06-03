@@ -44,7 +44,7 @@ pub struct BranchNode {
 }
 
 /// Sparse merkle tree
-#[derive(Vs, Default, Debug)]
+#[derive(Vs, Default, Debug, Deserialize, Serialize)]
 pub struct SparseMerkleTree<H, V, S: VsMgmt> {
     store: S,
     phantom: PhantomData<(H, V)>,
@@ -79,6 +79,12 @@ impl<H: Hasher, V: Value<H>, S: Store<V>> SparseMerkleTree<H, V, S> {
         &self.store
     }
 
+    pub fn remove(&mut self, key: H256) -> Result<H256> {
+        self.store
+            .remove_leaf(&key)
+            .and_then(|_| self.hash_recompute(key, MergeValue::zero()))
+    }
+
     /// Update a leaf, return new merkle root
     /// set to zero value to delete a key
     pub fn update(&mut self, key: H256, value: V) -> Result<H256> {
@@ -91,6 +97,10 @@ impl<H: Hasher, V: Value<H>, S: Store<V>> SparseMerkleTree<H, V, S> {
             self.store.remove_leaf(&key)?;
         }
 
+        self.hash_recompute(key, node)
+    }
+
+    fn hash_recompute(&mut self, key: H256, node: MergeValue) -> Result<H256> {
         // recompute the tree from bottom to top
         let mut current_key = key;
         let mut current_node = node;
@@ -132,6 +142,21 @@ impl<H: Hasher, V: Value<H>, S: Store<V>> SparseMerkleTree<H, V, S> {
         self.store.update_root(root).map(|_| root)
     }
 
+    pub fn remove_all(&mut self, mut keys: Vec<H256>) -> Result<H256> {
+        // Dedup(only keep the last of each key) and sort leaves
+        keys.reverse();
+        keys.sort();
+        keys.dedup();
+
+        let mut nodes: Vec<(H256, MergeValue)> = Vec::with_capacity(keys.len());
+        for k in keys {
+            self.store.remove_leaf(&k)?;
+            nodes.push((k, MergeValue::zero()));
+        }
+
+        self.hash_recompute_all(nodes)
+    }
+
     /// Update multiple leaves at once
     pub fn update_all(&mut self, mut leaves: Vec<(H256, V)>) -> Result<H256> {
         // Dedup(only keep the last of each key) and sort leaves
@@ -150,6 +175,10 @@ impl<H: Hasher, V: Value<H>, S: Store<V>> SparseMerkleTree<H, V, S> {
             nodes.push((k, value));
         }
 
+        self.hash_recompute_all(nodes)
+    }
+
+    fn hash_recompute_all(&mut self, mut nodes: Vec<(H256, MergeValue)>) -> Result<H256> {
         for height in 0..=core::u8::MAX {
             let mut next_nodes: Vec<(H256, MergeValue)> = Vec::new();
             let mut i = 0;
@@ -336,6 +365,12 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store2<X, V>> SparseMerkleTree2<X, H
         self.root(xid).is_zero()
     }
 
+    pub fn remove(&mut self, xid: &X, key: H256) -> Result<H256> {
+        self.store
+            .remove_leaf(xid, &key)
+            .and_then(|_| self.hash_recompute(xid, key, MergeValue::zero()))
+    }
+
     /// Update a leaf, return new merkle root
     /// set to zero value to delete a key
     pub fn update(&mut self, xid: &X, key: H256, value: V) -> Result<H256> {
@@ -348,6 +383,10 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store2<X, V>> SparseMerkleTree2<X, H
             self.store.remove_leaf(xid, &key)?;
         }
 
+        self.hash_recompute(xid, key, node)
+    }
+
+    fn hash_recompute(&mut self, xid: &X, key: H256, node: MergeValue) -> Result<H256> {
         // recompute the tree from bottom to top
         let mut current_key = key;
         let mut current_node = node;
@@ -390,6 +429,21 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store2<X, V>> SparseMerkleTree2<X, H
         self.store.update_root(xid, root).map(|_| root)
     }
 
+    pub fn remove_all(&mut self, xid: &X, mut keys: Vec<H256>) -> Result<H256> {
+        // Dedup(only keep the last of each key) and sort leaves
+        keys.reverse();
+        keys.sort();
+        keys.dedup();
+
+        let mut nodes: Vec<(H256, MergeValue)> = Vec::with_capacity(keys.len());
+        for k in keys {
+            self.store.remove_leaf(xid, &k)?;
+            nodes.push((k, MergeValue::zero()));
+        }
+
+        self.hash_recompute_all(xid, nodes)
+    }
+
     /// Update multiple leaves at once
     pub fn update_all(&mut self, xid: &X, mut leaves: Vec<(H256, V)>) -> Result<H256> {
         // Dedup(only keep the last of each key) and sort leaves
@@ -408,6 +462,10 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store2<X, V>> SparseMerkleTree2<X, H
             nodes.push((k, value));
         }
 
+        self.hash_recompute_all(xid, nodes)
+    }
+
+    fn hash_recompute_all(&mut self, xid: &X, mut nodes: Vec<(H256, MergeValue)>) -> Result<H256> {
         for height in 0..=core::u8::MAX {
             let mut next_nodes: Vec<(H256, MergeValue)> = Vec::new();
             let mut i = 0;
