@@ -115,8 +115,29 @@ impl Ord for H256 {
 
 impl From<[u8; 32]> for H256 {
     #[inline(always)]
-    fn from(v: [u8; 32]) -> H256 {
-        H256(v)
+    fn from(h: [u8; 32]) -> H256 {
+        H256(h)
+    }
+}
+
+impl From<&[u8; 32]> for H256 {
+    #[inline(always)]
+    fn from(h: &[u8; 32]) -> H256 {
+        H256(*h)
+    }
+}
+
+impl From<H256> for pt11::H256 {
+    #[inline(always)]
+    fn from(h: H256) -> pt11::H256 {
+        pt11::H256::from(h.0)
+    }
+}
+
+impl From<H256> for pt10::H256 {
+    #[inline(always)]
+    fn from(h: H256) -> pt10::H256 {
+        pt10::H256::from(h.0)
     }
 }
 
@@ -124,5 +145,19 @@ impl From<H256> for [u8; 32] {
     #[inline(always)]
     fn from(h256: H256) -> [u8; 32] {
         h256.0
+    }
+}
+
+impl From<pt11::H256> for H256 {
+    #[inline(always)]
+    fn from(h: pt11::H256) -> Self {
+        h.to_fixed_bytes().into()
+    }
+}
+
+impl From<pt10::H256> for H256 {
+    #[inline(always)]
+    fn from(h: pt10::H256) -> Self {
+        h.to_fixed_bytes().into()
     }
 }
