@@ -8,7 +8,7 @@ use crate::{
 use ruc::*;
 use serde::{Deserialize, Serialize};
 use std::result::Result as StdResult;
-use vsdb::{KeyEnDe, MapxDkVs, MapxVs, OrphanVs, ValueEnDe, Vs, VsMgmt};
+use vsdb::{BranchName, KeyEnDe, MapxDkVs, MapxVs, OrphanVs, ValueEnDe, VersionName, Vs, VsMgmt};
 
 #[derive(Vs, Debug, Clone, Deserialize, Serialize)]
 #[serde(bound = "")]
@@ -64,6 +64,21 @@ impl<V: ValueEnDe> Store<V> for DefaultStore<V> {
     #[inline(always)]
     fn get_leaf(&self, leaf_key: &H256) -> StdResult<Option<V>, Error> {
         Ok(self.leaves_map.get(leaf_key))
+    }
+
+    #[inline(always)]
+    fn get_leaf_by_branch(&self, leaf_key: &H256, br: BranchName) -> StdResult<Option<V>, Error> {
+        Ok(self.leaves_map.get_by_branch(leaf_key, br))
+    }
+
+    #[inline(always)]
+    fn get_leaf_by_branch_version(
+        &self,
+        leaf_key: &H256,
+        br: BranchName,
+        ver: VersionName,
+    ) -> StdResult<Option<V>, Error> {
+        Ok(self.leaves_map.get_by_branch_version(leaf_key, br, ver))
     }
 
     #[inline(always)]
@@ -137,6 +152,29 @@ impl<X: KeyEnDe, V: ValueEnDe> Store2<X, V> for DefaultStore2<X, V> {
     #[inline(always)]
     fn get_leaf(&self, xid: &X, leaf_key: &H256) -> StdResult<Option<V>, Error> {
         Ok(self.leaves_map.get(&(xid, leaf_key)))
+    }
+
+    #[inline(always)]
+    fn get_leaf_by_branch(
+        &self,
+        xid: &X,
+        leaf_key: &H256,
+        br: BranchName,
+    ) -> StdResult<Option<V>, Error> {
+        Ok(self.leaves_map.get_by_branch(&(xid, leaf_key), br))
+    }
+
+    #[inline(always)]
+    fn get_leaf_by_branch_version(
+        &self,
+        xid: &X,
+        leaf_key: &H256,
+        br: BranchName,
+        ver: VersionName,
+    ) -> StdResult<Option<V>, Error> {
+        Ok(self
+            .leaves_map
+            .get_by_branch_version(&(xid, leaf_key), br, ver))
     }
 
     // Remove all data under the xid(top-level key).

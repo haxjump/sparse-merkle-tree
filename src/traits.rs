@@ -4,7 +4,7 @@ use crate::{
     H256,
 };
 use std::result::Result as StdResult;
-use vsdb::VsMgmt;
+use vsdb::{BranchName, VersionName, VsMgmt};
 
 /// Trait for customize hash function
 pub trait Hasher: Default {
@@ -70,6 +70,13 @@ pub trait Store<V>: VsMgmt {
     fn insert_leaf(&mut self, leaf_key: H256, leaf: V) -> StdResult<(), Error>;
     fn remove_leaf(&mut self, leaf_key: &H256) -> StdResult<(), Error>;
     fn get_leaf(&self, leaf_key: &H256) -> StdResult<Option<V>, Error>;
+    fn get_leaf_by_branch(&self, leaf_key: &H256, br: BranchName) -> StdResult<Option<V>, Error>;
+    fn get_leaf_by_branch_version(
+        &self,
+        leaf_key: &H256,
+        br: BranchName,
+        ver: VersionName,
+    ) -> StdResult<Option<V>, Error>;
 
     fn update_root(&mut self, new_root: H256) -> StdResult<(), Error>;
     fn get_root(&self) -> StdResult<H256, Error>;
@@ -90,6 +97,19 @@ pub trait Store2<X, V>: VsMgmt {
     fn insert_leaf(&mut self, xid: &X, leaf_key: H256, leaf: V) -> StdResult<(), Error>;
     fn remove_leaf(&mut self, xid: &X, leaf_key: &H256) -> StdResult<(), Error>;
     fn get_leaf(&self, xid: &X, leaf_key: &H256) -> StdResult<Option<V>, Error>;
+    fn get_leaf_by_branch(
+        &self,
+        xid: &X,
+        leaf_key: &H256,
+        br: BranchName,
+    ) -> StdResult<Option<V>, Error>;
+    fn get_leaf_by_branch_version(
+        &self,
+        xid: &X,
+        leaf_key: &H256,
+        br: BranchName,
+        ver: VersionName,
+    ) -> StdResult<Option<V>, Error>;
 
     // Remove all data under the xid(top-level key).
     fn remove_x(&mut self, xid: &X) -> StdResult<(), Error>;

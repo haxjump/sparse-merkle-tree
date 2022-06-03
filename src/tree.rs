@@ -7,7 +7,7 @@ use crate::{
 };
 use core::{cmp::Ordering, marker::PhantomData};
 use serde::{Deserialize, Serialize};
-use vsdb::{KeyEnDe, Vs, VsMgmt};
+use vsdb::{BranchName, KeyEnDe, VersionName, Vs, VsMgmt};
 
 /// The branch key
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Deserialize, Serialize)]
@@ -243,10 +243,22 @@ impl<H: Hasher, V: Value<H>, S: Store<V>> SparseMerkleTree<H, V, S> {
     /// return zero value if leaf not exists
     #[inline(always)]
     pub fn get(&self, key: &H256) -> Result<Option<V>> {
-        if self.is_empty() {
-            return Ok(None);
-        }
         self.store.get_leaf(key)
+    }
+
+    #[inline(always)]
+    pub fn get_by_branch(&self, key: &H256, br: BranchName) -> Result<Option<V>> {
+        self.store.get_leaf_by_branch(key, br)
+    }
+
+    #[inline(always)]
+    pub fn get_by_branch_version(
+        &self,
+        key: &H256,
+        br: BranchName,
+        ver: VersionName,
+    ) -> Result<Option<V>> {
+        self.store.get_leaf_by_branch_version(key, br, ver)
     }
 
     /// Generate merkle proof
@@ -558,10 +570,23 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store<H256>, S2: Store2<X, V>>
     /// return zero value if leaf not exists
     #[inline(always)]
     pub fn get(&self, xid: &X, key: &H256) -> Result<Option<V>> {
-        if self.is_empty(xid) {
-            return Ok(None);
-        }
         self.store.get_leaf(xid, key)
+    }
+
+    #[inline(always)]
+    pub fn get_by_branch(&self, xid: &X, key: &H256, br: BranchName) -> Result<Option<V>> {
+        self.store.get_leaf_by_branch(xid, key, br)
+    }
+
+    #[inline(always)]
+    pub fn get_by_branch_version(
+        &self,
+        xid: &X,
+        key: &H256,
+        br: BranchName,
+        ver: VersionName,
+    ) -> Result<Option<V>> {
+        self.store.get_leaf_by_branch_version(xid, key, br, ver)
     }
 
     /// Remove all data under the xid(top-level key).
