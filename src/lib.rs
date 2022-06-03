@@ -14,8 +14,10 @@ pub mod tree;
 #[cfg(test)]
 mod tests;
 
+pub use default_store::{DefaultStore, DefaultStore2};
 pub use h256::H256;
 pub use merkle_proof::{CompiledMerkleProof, MerkleProof};
+pub use traits::*;
 pub use tree::{SparseMerkleTree, SparseMerkleTree2};
 
 /// Expected path size: log2(256) * 2, used for hint vector capacity
@@ -30,7 +32,7 @@ pub type VsSmt<V> =
 
 /// An out-of-the-box implementation for double-key scene.
 pub type VsSmt2<X, V> =
-    SparseMerkleTree2<X, blake3_hasher::Blake3Hasher, V, default_store::DefaultStore2<X, V>>;
+    SparseMerkleTree2<X, blake3_hasher::Blake3Hasher, V, DefaultStore<H256>, DefaultStore2<X, V>>;
 
 #[macro_export(crate)]
 macro_rules! chg_store {

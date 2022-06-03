@@ -338,19 +338,29 @@ impl<H: Hasher, V: Value<H>, S: Store<V>> SparseMerkleTree<H, V, S> {
 /// Sparse merkle tree,
 /// useful in some double-key scenes.
 #[derive(Vs, Clone, Default, Debug, Deserialize, Serialize)]
-pub struct SparseMerkleTree2<X, H, V, S: VsMgmt> {
-    store: S,
+pub struct SparseMerkleTree2<X, H, V, S: VsMgmt, S2: VsMgmt> {
+    store: S2,
+    xroot: SparseMerkleTree<H, H256, S>,
     phantom: PhantomData<(X, H, V)>,
 }
 
-impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store2<X, V>> SparseMerkleTree2<X, H, V, S> {
+impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store<H256>, S2: Store2<X, V>>
+    SparseMerkleTree2<X, H, V, S, S2>
+{
     /// Build a merkle tree from root and store
     #[inline(always)]
-    pub fn new(store: S) -> SparseMerkleTree2<X, H, V, S> {
+    pub fn new(store: S, store2: S2) -> SparseMerkleTree2<X, H, V, S, S2> {
         SparseMerkleTree2 {
-            store,
+            store: store2,
+            xroot: SparseMerkleTree::new(store),
             phantom: PhantomData,
         }
+    }
+
+    /// Global merkle root
+    #[inline(always)]
+    pub fn xroot(&self) -> H256 {
+        self.xroot.root()
     }
 
     /// Merkle root
@@ -366,9 +376,14 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store2<X, V>> SparseMerkleTree2<X, H
     }
 
     pub fn remove(&mut self, xid: &X, key: H256) -> Result<H256> {
-        self.store
+        let new_root = self
+            .store
             .remove_leaf(xid, &key)
-            .and_then(|_| self.hash_recompute(xid, key, MergeValue::zero()))
+            .and_then(|_| self.hash_recompute(xid, key, MergeValue::zero()))?;
+
+        self.xroot.update(H::hash(&xid.encode()[..]), new_root)?;
+
+        Ok(new_root)
     }
 
     /// Update a leaf, return new merkle root
@@ -383,7 +398,11 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store2<X, V>> SparseMerkleTree2<X, H
             self.store.remove_leaf(xid, &key)?;
         }
 
-        self.hash_recompute(xid, key, node)
+        let new_root = self.hash_recompute(xid, key, node)?;
+
+        self.xroot.update(H::hash(&xid.encode()[..]), new_root)?;
+
+        Ok(new_root)
     }
 
     fn hash_recompute(&mut self, xid: &X, key: H256, node: MergeValue) -> Result<H256> {
@@ -441,7 +460,11 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store2<X, V>> SparseMerkleTree2<X, H
             nodes.push((k, MergeValue::zero()));
         }
 
-        self.hash_recompute_all(xid, nodes)
+        let new_root = self.hash_recompute_all(xid, nodes)?;
+
+        self.xroot.update(H::hash(&xid.encode()[..]), new_root)?;
+
+        Ok(new_root)
     }
 
     /// Update multiple leaves at once
@@ -462,7 +485,11 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store2<X, V>> SparseMerkleTree2<X, H
             nodes.push((k, value));
         }
 
-        self.hash_recompute_all(xid, nodes)
+        let new_root = self.hash_recompute_all(xid, nodes)?;
+
+        self.xroot.update(H::hash(&xid.encode()[..]), new_root)?;
+
+        Ok(new_root)
     }
 
     fn hash_recompute_all(&mut self, xid: &X, mut nodes: Vec<(H256, MergeValue)>) -> Result<H256> {
@@ -540,7 +567,7 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store2<X, V>> SparseMerkleTree2<X, H
     /// Remove all data under the xid(top-level key).
     pub fn remove_x(&mut self, xid: &X) -> Result<()> {
         crate::chg_store!(self.store.remove_x(xid));
-        Ok(())
+        self.xroot.remove(H::hash(&xid.encode()[..])).map(|_| ())
     }
 
     /// Generate merkle proof

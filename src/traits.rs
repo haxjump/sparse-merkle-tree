@@ -25,11 +25,41 @@ impl<H> Value<H> for H256 {
     }
 }
 
-impl<T: AsRef<[u8]>, H: Hasher> Value<H> for T {
+impl<H> Value<H> for pt11::H256 {
     fn to_h256(&self) -> H256 {
-        H::hash(self.as_ref())
+        <H256 as Value<H>>::to_h256(&H256::from(self))
     }
 }
+
+impl<H> Value<H> for pt11::H160 {
+    fn to_h256(&self) -> H256 {
+        <H256 as Value<H>>::to_h256(&H256::from(self))
+    }
+}
+
+impl<H> Value<H> for pt10::H256 {
+    fn to_h256(&self) -> H256 {
+        <H256 as Value<H>>::to_h256(&H256::from(self))
+    }
+}
+
+impl<H> Value<H> for pt10::H160 {
+    fn to_h256(&self) -> H256 {
+        <H256 as Value<H>>::to_h256(&H256::from(self))
+    }
+}
+
+// impl<T: ValueEn, H: Hasher> Value<H> for T {
+//     fn to_h256(&self) -> H256 {
+//         H::hash(&self.encode_value()[..])
+//     }
+// }
+
+// impl<T: AsRef<[u8]>, H: Hasher> Value<H> for T {
+//     fn to_h256(&self) -> H256 {
+//         H::hash(self.as_ref())
+//     }
+// }
 
 /// Trait for customize backend storage
 pub trait Store<V>: VsMgmt {

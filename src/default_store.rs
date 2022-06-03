@@ -6,10 +6,12 @@ use crate::{
     H256,
 };
 use ruc::*;
+use serde::{Deserialize, Serialize};
 use std::result::Result as StdResult;
 use vsdb::{KeyEnDe, MapxDkVs, MapxVs, OrphanVs, ValueEnDe, Vs, VsMgmt};
 
-#[derive(Vs, Debug, Clone)]
+#[derive(Vs, Debug, Clone, Deserialize, Serialize)]
+#[serde(bound = "")]
 pub struct DefaultStore<V: ValueEnDe> {
     root: OrphanVs<H256>,
     branches_map: MapxVs<BranchKey, BranchNode>,
@@ -76,7 +78,8 @@ impl<V: ValueEnDe> Store<V> for DefaultStore<V> {
     }
 }
 
-#[derive(Vs, Debug, Clone)]
+#[derive(Vs, Debug, Clone, Deserialize, Serialize)]
+#[serde(bound = "")]
 pub struct DefaultStore2<X: KeyEnDe, V: ValueEnDe> {
     root: MapxVs<X, H256>,
     branches_map: MapxDkVs<X, BranchKey, BranchNode>,

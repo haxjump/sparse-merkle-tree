@@ -155,9 +155,57 @@ impl From<pt11::H256> for H256 {
     }
 }
 
+impl From<&pt11::H256> for H256 {
+    #[inline(always)]
+    fn from(h: &pt11::H256) -> Self {
+        (*h.as_fixed_bytes()).into()
+    }
+}
+
+impl From<pt11::H160> for H256 {
+    #[inline(always)]
+    fn from(h: pt11::H160) -> Self {
+        pt11::H256::from(h).into()
+    }
+}
+
+impl From<&pt11::H160> for H256 {
+    #[inline(always)]
+    fn from(h: &pt11::H160) -> Self {
+        pt11::H256::from(*h).into()
+    }
+}
+
 impl From<pt10::H256> for H256 {
     #[inline(always)]
     fn from(h: pt10::H256) -> Self {
         h.to_fixed_bytes().into()
+    }
+}
+
+impl From<&pt10::H256> for H256 {
+    #[inline(always)]
+    fn from(h: &pt10::H256) -> Self {
+        (*h.as_fixed_bytes()).into()
+    }
+}
+
+impl From<pt10::H160> for H256 {
+    #[inline(always)]
+    fn from(h: pt10::H160) -> Self {
+        pt10::H256::from(h).into()
+    }
+}
+
+impl From<&pt10::H160> for H256 {
+    #[inline(always)]
+    fn from(h: &pt10::H160) -> Self {
+        pt10::H256::from(*h).into()
+    }
+}
+
+impl AsRef<[u8]> for H256 {
+    fn as_ref(&self) -> &[u8] {
+        &self.0[..]
     }
 }
