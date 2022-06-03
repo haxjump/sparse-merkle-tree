@@ -15,14 +15,17 @@ pub enum MergeValue {
 }
 
 impl MergeValue {
+    #[inline(always)]
     pub fn from_h256(v: H256) -> Self {
         MergeValue::Value(v)
     }
 
+    #[inline(always)]
     pub fn zero() -> Self {
         MergeValue::Value(H256::zero())
     }
 
+    #[inline(always)]
     pub fn is_zero(&self) -> bool {
         if let MergeValue::Value(v) = self {
             return v.is_zero();
@@ -30,6 +33,7 @@ impl MergeValue {
         false
     }
 
+    #[inline(always)]
     pub fn hash<H: Hasher + Default>(&self) -> H256 {
         match self {
             MergeValue::Value(v) => *v,
@@ -50,6 +54,7 @@ impl MergeValue {
 }
 
 /// Hash base node into a H256
+#[inline(always)]
 pub fn hash_base_node<H: Hasher + Default>(
     base_height: u8,
     base_key: &H256,

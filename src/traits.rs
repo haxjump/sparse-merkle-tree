@@ -3,6 +3,7 @@ use crate::{
     tree::{BranchKey, BranchNode},
     H256,
 };
+use std::result::Result as StdResult;
 use vsdb::VsMgmt;
 
 /// Trait for customize hash function
@@ -32,14 +33,37 @@ impl<T: AsRef<[u8]>, H: Hasher> Value<H> for T {
 
 /// Trait for customize backend storage
 pub trait Store<V>: VsMgmt {
-    fn insert_branch(&mut self, node_key: BranchKey, branch: BranchNode) -> Result<(), Error>;
-    fn get_branch(&self, branch_key: &BranchKey) -> Result<Option<BranchNode>, Error>;
-    fn remove_branch(&mut self, node_key: &BranchKey) -> Result<(), Error>;
+    fn insert_branch(&mut self, node_key: BranchKey, branch: BranchNode) -> StdResult<(), Error>;
+    fn remove_branch(&mut self, node_key: &BranchKey) -> StdResult<(), Error>;
+    fn get_branch(&self, branch_key: &BranchKey) -> StdResult<Option<BranchNode>, Error>;
 
-    fn insert_leaf(&mut self, leaf_key: H256, leaf: V) -> Result<(), Error>;
-    fn get_leaf(&self, leaf_key: &H256) -> Result<Option<V>, Error>;
-    fn remove_leaf(&mut self, leaf_key: &H256) -> Result<(), Error>;
+    fn insert_leaf(&mut self, leaf_key: H256, leaf: V) -> StdResult<(), Error>;
+    fn remove_leaf(&mut self, leaf_key: &H256) -> StdResult<(), Error>;
+    fn get_leaf(&self, leaf_key: &H256) -> StdResult<Option<V>, Error>;
 
-    fn update_root(&mut self, new_root: H256) -> Result<(), Error>;
-    fn get_root(&self) -> Result<H256, Error>;
+    fn update_root(&mut self, new_root: H256) -> StdResult<(), Error>;
+    fn get_root(&self) -> StdResult<H256, Error>;
+}
+
+/// Trait for customize backend storage,
+/// useful in some double-key scenes.
+pub trait Store2<X, V>: VsMgmt {
+    fn insert_branch(
+        &mut self,
+        xid: &X,
+        node_key: BranchKey,
+        branch: BranchNode,
+    ) -> StdResult<(), Error>;
+    fn remove_branch(&mut self, xid: &X, node_key: &BranchKey) -> StdResult<(), Error>;
+    fn get_branch(&self, xid: &X, branch_key: &BranchKey) -> StdResult<Option<BranchNode>, Error>;
+
+    fn insert_leaf(&mut self, xid: &X, leaf_key: H256, leaf: V) -> StdResult<(), Error>;
+    fn remove_leaf(&mut self, xid: &X, leaf_key: &H256) -> StdResult<(), Error>;
+    fn get_leaf(&self, xid: &X, leaf_key: &H256) -> StdResult<Option<V>, Error>;
+
+    // Remove all data under the xid(top-level key).
+    fn remove_x(&mut self, xid: &X) -> StdResult<(), Error>;
+
+    fn update_root(&mut self, xid: &X, new_root: H256) -> StdResult<(), Error>;
+    fn get_root(&self, xid: &X) -> StdResult<H256, Error>;
 }

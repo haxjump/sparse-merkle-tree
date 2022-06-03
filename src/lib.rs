@@ -16,7 +16,7 @@ mod tests;
 
 pub use h256::H256;
 pub use merkle_proof::{CompiledMerkleProof, MerkleProof};
-pub use tree::SparseMerkleTree;
+pub use tree::{SparseMerkleTree, SparseMerkleTree2};
 
 /// Expected path size: log2(256) * 2, used for hint vector capacity
 pub const EXPECTED_PATH_SIZE: usize = 16;
@@ -27,3 +27,16 @@ pub(crate) const MAX_STACK_SIZE: usize = 257;
 /// An out-of-the-box implementation.
 pub type VsSmt<V> =
     SparseMerkleTree<blake3_hasher::Blake3Hasher, V, default_store::DefaultStore<V>>;
+
+/// An out-of-the-box implementation for double-key scene.
+pub type VsSmt2<X, V> =
+    SparseMerkleTree2<X, blake3_hasher::Blake3Hasher, V, default_store::DefaultStore2<X, V>>;
+
+#[macro_export(crate)]
+macro_rules! chg_store {
+    ($op: expr) => {
+        if let Err(e) = $op.c(d!()) {
+            return Err(Error::Store(e.to_string()));
+        }
+    };
+}

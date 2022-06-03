@@ -17,6 +17,7 @@ impl MerkleProof {
     /// Create MerkleProof
     /// leaves_bitmap: leaf bitmap, bitmap.get_bit(height) is true means there need a non zero sibling in this height
     /// proof: needed sibling node hash
+    #[inline(always)]
     pub fn new(leaves_bitmap: Vec<H256>, merkle_path: Vec<MergeValue>) -> Self {
         MerkleProof {
             leaves_bitmap,
@@ -25,6 +26,7 @@ impl MerkleProof {
     }
 
     /// Destruct the structure, useful for serialization
+    #[inline(always)]
     pub fn take(self) -> (Vec<H256>, Vec<MergeValue>) {
         let MerkleProof {
             leaves_bitmap,
@@ -34,16 +36,19 @@ impl MerkleProof {
     }
 
     /// number of leaves required by this merkle proof
+    #[inline(always)]
     pub fn leaves_count(&self) -> usize {
         self.leaves_bitmap.len()
     }
 
     /// return the inner leaves_bitmap vector
+    #[inline(always)]
     pub fn leaves_bitmap(&self) -> &Vec<H256> {
         &self.leaves_bitmap
     }
 
     /// return sibling node hashes
+    #[inline(always)]
     pub fn merkle_path(&self) -> &Vec<MergeValue> {
         &self.merkle_path
     }
@@ -160,6 +165,7 @@ impl MerkleProof {
     ///
     /// return EmptyProof error when proof is empty
     /// return CorruptedProof error when proof is invalid
+    #[inline(always)]
     pub fn compute_root<H: Hasher + Default>(
         self,
         leaves: Vec<(H256, Option<H256>)>,
@@ -170,6 +176,7 @@ impl MerkleProof {
 
     /// Verify merkle proof
     /// see compute_root_from_proof
+    #[inline(always)]
     pub fn verify<H: Hasher + Default>(
         self,
         root: H256,
@@ -351,6 +358,7 @@ impl CompiledMerkleProof {
         Ok(stack[0].2.hash::<H>())
     }
 
+    #[inline(always)]
     pub fn verify<H: Hasher + Default>(
         &self,
         root: H256,
@@ -362,6 +370,7 @@ impl CompiledMerkleProof {
 }
 
 impl From<CompiledMerkleProof> for Vec<u8> {
+    #[inline(always)]
     fn from(proof: CompiledMerkleProof) -> Vec<u8> {
         proof.0
     }
