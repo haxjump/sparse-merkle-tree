@@ -31,8 +31,13 @@ pub type VsSmt<V> =
     SparseMerkleTree<blake3_hasher::Blake3Hasher, V, default_store::DefaultStore<V>>;
 
 /// An out-of-the-box implementation for double-key scene.
-pub type VsSmt2<X, V> =
-    SparseMerkleTree2<X, blake3_hasher::Blake3Hasher, V, DefaultStore<H256>, DefaultStore2<X, V>>;
+pub type VsSmt2<X, V> = SparseMerkleTree2<
+    X,
+    blake3_hasher::Blake3Hasher,
+    V,
+    DefaultStore<H256>,
+    DefaultStore2<X, V>,
+>;
 
 #[macro_export(crate)]
 macro_rules! chg_store {

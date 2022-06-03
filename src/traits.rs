@@ -63,14 +63,23 @@ impl<H> Value<H> for pt10::H160 {
 
 /// Trait for customize backend storage
 pub trait Store<V>: VsMgmt {
-    fn insert_branch(&mut self, node_key: BranchKey, branch: BranchNode) -> StdResult<(), Error>;
+    fn insert_branch(
+        &mut self,
+        node_key: BranchKey,
+        branch: BranchNode,
+    ) -> StdResult<(), Error>;
     fn remove_branch(&mut self, node_key: &BranchKey) -> StdResult<(), Error>;
-    fn get_branch(&self, branch_key: &BranchKey) -> StdResult<Option<BranchNode>, Error>;
+    fn get_branch(&self, branch_key: &BranchKey)
+    -> StdResult<Option<BranchNode>, Error>;
 
     fn insert_leaf(&mut self, leaf_key: H256, leaf: V) -> StdResult<(), Error>;
     fn remove_leaf(&mut self, leaf_key: &H256) -> StdResult<(), Error>;
     fn get_leaf(&self, leaf_key: &H256) -> StdResult<Option<V>, Error>;
-    fn get_leaf_by_branch(&self, leaf_key: &H256, br: BranchName) -> StdResult<Option<V>, Error>;
+    fn get_leaf_by_branch(
+        &self,
+        leaf_key: &H256,
+        br: BranchName,
+    ) -> StdResult<Option<V>, Error>;
     fn get_leaf_by_branch_version(
         &self,
         leaf_key: &H256,
@@ -92,7 +101,11 @@ pub trait Store2<X, V>: VsMgmt {
         branch: BranchNode,
     ) -> StdResult<(), Error>;
     fn remove_branch(&mut self, xid: &X, node_key: &BranchKey) -> StdResult<(), Error>;
-    fn get_branch(&self, xid: &X, branch_key: &BranchKey) -> StdResult<Option<BranchNode>, Error>;
+    fn get_branch(
+        &self,
+        xid: &X,
+        branch_key: &BranchKey,
+    ) -> StdResult<Option<BranchNode>, Error>;
 
     fn insert_leaf(&mut self, xid: &X, leaf_key: H256, leaf: V) -> StdResult<(), Error>;
     fn remove_leaf(&mut self, xid: &X, leaf_key: &H256) -> StdResult<(), Error>;

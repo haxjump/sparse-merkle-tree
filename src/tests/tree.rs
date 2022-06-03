@@ -1,4 +1,6 @@
-use crate::{blake3_hasher::Blake3Hasher, error::Error, merge::MergeValue, MerkleProof, VsSmt, *};
+use crate::{
+    blake3_hasher::Blake3Hasher, error::Error, merge::MergeValue, MerkleProof, VsSmt, *,
+};
 use proptest::prelude::*;
 use rand::prelude::{Rng, SliceRandom};
 
@@ -105,8 +107,8 @@ fn test_merkle_root() {
     }
 
     let expected_root: H256 = [
-        121, 132, 252, 110, 162, 162, 63, 100, 12, 112, 190, 230, 177, 100, 54, 80, 95, 152, 72,
-        29, 158, 97, 84, 117, 107, 2, 153, 97, 36, 38, 123, 84,
+        121, 132, 252, 110, 162, 162, 63, 100, 12, 112, 190, 230, 177, 100, 54, 80, 95,
+        152, 72, 29, 158, 97, 84, 117, 107, 2, 153, 97, 36, 38, 123, 84,
     ]
     .into();
     assert_eq!(tree.store().leaves_map().len(), 9);
@@ -117,8 +119,8 @@ fn test_merkle_root() {
 fn test_zero_value_donot_change_root() {
     let mut tree = SMT::default();
     let key = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 1,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 1,
     ]
     .into();
     let value = H256::zero();
@@ -132,13 +134,13 @@ fn test_zero_value_donot_change_root() {
 fn test_zero_value_donot_change_store() {
     let mut tree = SMT::default();
     let key = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
     ]
     .into();
     let value = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 1,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 1,
     ]
     .into();
     tree.update(key, value).unwrap();
@@ -148,13 +150,13 @@ fn test_zero_value_donot_change_store() {
 
     // insert a zero value leaf
     let key = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 1,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 1,
     ]
     .into();
     let value = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
     ]
     .into();
     tree.update(key, value).unwrap();
@@ -167,13 +169,13 @@ fn test_zero_value_donot_change_store() {
 fn test_delete_a_leaf() {
     let mut tree = SMT::default();
     let key = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
     ]
     .into();
     let value = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 1,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 1,
     ]
     .into();
     tree.update(key, value).unwrap();
@@ -183,13 +185,13 @@ fn test_delete_a_leaf() {
 
     // insert a leaf
     let key = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 1,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 1,
     ]
     .into();
     let value = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 1,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 1,
     ]
     .into();
     tree.update(key, value).unwrap();
@@ -207,15 +209,15 @@ fn test_sibling_key_get() {
     {
         let mut tree = SMT::default();
         let key = H256::from([
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0,
         ]);
         let value = H256::from([1u8; 32]);
         tree.update(key, value).expect("update");
 
         let sibling_key = H256::from([
-            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0,
+            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0,
         ]);
         // get non exists sibling key should return zero value;
         assert_eq!(None, tree.get(&sibling_key).unwrap());
@@ -224,15 +226,15 @@ fn test_sibling_key_get() {
     {
         let mut tree = SMT::default();
         let key = H256::from([
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0,
         ]);
         let value = H256::from([1u8; 32]);
         tree.update(key, value).expect("update");
 
         let sibling_key = H256::from([
-            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0,
+            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0,
         ]);
         let sibling_value = H256::from([2u8; 32]);
         tree.update(sibling_key, sibling_value).expect("update");
@@ -287,24 +289,28 @@ fn test_merkle_proof(key: H256, value: H256) {
         let proof = tree.merkle_proof(vec![key]).expect("proof");
         let compiled_proof = proof.clone().compile(vec![key]).expect("compile proof");
         assert!(proof.merkle_path().len() < EXPECTED_MERKLE_PATH_SIZE);
-        assert!(proof
-            .verify::<Blake3Hasher>(
-                tree.root(),
-                vec![(key, value)]
-                    .into_iter()
-                    .map(|(k, v)| (k, Some(v)))
-                    .collect()
-            )
-            .expect("verify"));
-        assert!(compiled_proof
-            .verify::<Blake3Hasher>(
-                tree.root(),
-                vec![(key, value)]
-                    .into_iter()
-                    .map(|(k, v)| (k, Some(v)))
-                    .collect()
-            )
-            .expect("compiled verify"));
+        assert!(
+            proof
+                .verify::<Blake3Hasher>(
+                    tree.root(),
+                    vec![(key, value)]
+                        .into_iter()
+                        .map(|(k, v)| (k, Some(v)))
+                        .collect()
+                )
+                .expect("verify")
+        );
+        assert!(
+            compiled_proof
+                .verify::<Blake3Hasher>(
+                    tree.root(),
+                    vec![(key, value)]
+                        .into_iter()
+                        .map(|(k, v)| (k, Some(v)))
+                        .collect()
+                )
+                .expect("compiled verify")
+        );
     }
 }
 
@@ -340,20 +346,23 @@ fn leaves(
 }
 
 fn leaves_bitmap(max_leaves_bitmap: usize) -> impl Strategy<Value = Vec<H256>> {
-    prop::collection::vec(prop::array::uniform32(0u8..), max_leaves_bitmap).prop_flat_map(
-        |leaves_bitmap| Just(leaves_bitmap.into_iter().map(|item| item.into()).collect()),
-    )
+    prop::collection::vec(prop::array::uniform32(0u8..), max_leaves_bitmap)
+        .prop_flat_map(|leaves_bitmap| {
+            Just(leaves_bitmap.into_iter().map(|item| item.into()).collect())
+        })
 }
 
 fn merkle_proof(max_proof: usize) -> impl Strategy<Value = Vec<MergeValue>> {
-    prop::collection::vec(prop::array::uniform32(0u8..), max_proof).prop_flat_map(|proof| {
-        Just(
-            proof
-                .into_iter()
-                .map(|item| MergeValue::from_h256(item.into()))
-                .collect(),
-        )
-    })
+    prop::collection::vec(prop::array::uniform32(0u8..), max_proof).prop_flat_map(
+        |proof| {
+            Just(
+                proof
+                    .into_iter()
+                    .map(|item| MergeValue::from_h256(item.into()))
+                    .collect(),
+            )
+        },
+    )
 }
 
 proptest! {
@@ -691,28 +700,28 @@ fn test_v0_2_broken_sample() {
 #[test]
 fn test_v0_3_broken_sample() {
     let k1 = [
-        0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0,
+        0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
     ];
     let v1 = [
-        108, 153, 9, 238, 15, 28, 173, 182, 146, 77, 52, 203, 162, 151, 125, 76, 55, 176, 192, 104,
-        170, 5, 193, 174, 137, 255, 169, 176, 132, 64, 199, 115,
+        108, 153, 9, 238, 15, 28, 173, 182, 146, 77, 52, 203, 162, 151, 125, 76, 55,
+        176, 192, 104, 170, 5, 193, 174, 137, 255, 169, 176, 132, 64, 199, 115,
     ];
     let k2 = [
-        1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0,
+        1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
     ];
     let v2 = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
     ];
     let k3 = [
-        1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0,
+        1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
     ];
     let v3 = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
     ];
 
     let mut smt = SMT::default();
@@ -729,39 +738,39 @@ fn test_v0_3_broken_sample() {
 #[test]
 fn test_replay_to_pass_proof() {
     let key1: H256 = [
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
     ]
     .into();
     let key2: H256 = [
-        2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0,
+        2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
     ]
     .into();
     let key3: H256 = [
-        3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0,
+        3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
     ]
     .into();
     let key4: H256 = [
-        4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0,
+        4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
     ]
     .into();
 
     let existing: H256 = [
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
     ]
     .into();
     let non_existing: H256 = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
     ]
     .into();
     let other_value: H256 = [
-        0, 0, 0xff, 0, 0, 0, 0xff, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0xff,
+        0, 0, 0xff, 0, 0, 0, 0xff, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0xff,
     ]
     .into();
     let pairs = vec![
@@ -780,41 +789,49 @@ fn test_replay_to_pass_proof() {
     let compiled_proof = proofc.clone().compile(vec![key3]).expect("compile proof");
 
     println!("verify ok case");
-    assert!(proofc
-        .clone()
-        .verify::<Blake3Hasher>(
-            smt.root(),
-            leaf_c.into_iter().map(|(k, v)| (k, Some(v))).collect()
-        )
-        .expect("verify"));
+    assert!(
+        proofc
+            .clone()
+            .verify::<Blake3Hasher>(
+                smt.root(),
+                leaf_c.into_iter().map(|(k, v)| (k, Some(v))).collect()
+            )
+            .expect("verify")
+    );
     println!("verify not ok case");
-    assert!(!proofc
-        .clone()
-        .verify::<Blake3Hasher>(
-            smt.root(),
-            leaf_other.into_iter().map(|(k, v)| (k, Some(v))).collect()
-        )
-        .expect("verify"));
+    assert!(
+        !proofc
+            .clone()
+            .verify::<Blake3Hasher>(
+                smt.root(),
+                leaf_other.into_iter().map(|(k, v)| (k, Some(v))).collect()
+            )
+            .expect("verify")
+    );
 
     println!("merkle proof, leaf is faked");
-    assert!(!proofc
-        .verify::<Blake3Hasher>(
-            smt.root(),
-            leaf_a_bl
-                .clone()
-                .into_iter()
-                .map(|(k, v)| (k, Some(v)))
-                .collect()
-        )
-        .expect("verify"));
+    assert!(
+        !proofc
+            .verify::<Blake3Hasher>(
+                smt.root(),
+                leaf_a_bl
+                    .clone()
+                    .into_iter()
+                    .map(|(k, v)| (k, Some(v)))
+                    .collect()
+            )
+            .expect("verify")
+    );
 
     println!("compiled merkle proof, leaf is faked");
-    assert!(!compiled_proof
-        .verify::<Blake3Hasher>(
-            smt.root(),
-            leaf_a_bl.into_iter().map(|(k, v)| (k, Some(v))).collect()
-        )
-        .expect("verify compiled proof"));
+    assert!(
+        !compiled_proof
+            .verify::<Blake3Hasher>(
+                smt.root(),
+                leaf_a_bl.into_iter().map(|(k, v)| (k, Some(v))).collect()
+            )
+            .expect("verify compiled proof")
+    );
 }
 
 #[test]
@@ -835,12 +852,14 @@ fn test_sibling_leaf() {
     let keys = vec![rand_key, sibling_key];
     let smt = new_smt(pairs.clone());
     let proof = smt.merkle_proof(keys).expect("gen proof");
-    assert!(proof
-        .verify::<Blake3Hasher>(
-            smt.root(),
-            pairs.into_iter().map(|(k, v)| (k, Some(v))).collect()
-        )
-        .expect("verify"));
+    assert!(
+        proof
+            .verify::<Blake3Hasher>(
+                smt.root(),
+                pairs.into_iter().map(|(k, v)| (k, Some(v))).collect()
+            )
+            .expect("verify")
+    );
 }
 
 #[test]
@@ -874,10 +893,12 @@ fn test_max_stack_size() {
     let smt = new_smt(pairs.clone());
     let proof = smt.merkle_proof(keys.clone()).expect("gen proof");
     let compiled_proof = proof.compile(keys).expect("compile proof");
-    assert!(compiled_proof
-        .verify::<Blake3Hasher>(
-            smt.root(),
-            pairs.into_iter().map(|(k, v)| (k, Some(v))).collect()
-        )
-        .expect("verify"));
+    assert!(
+        compiled_proof
+            .verify::<Blake3Hasher>(
+                smt.root(),
+                pairs.into_iter().map(|(k, v)| (k, Some(v))).collect()
+            )
+            .expect("verify")
+    );
 }

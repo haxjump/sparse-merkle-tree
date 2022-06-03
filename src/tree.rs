@@ -107,18 +107,19 @@ impl<H: Hasher, V: Value<H>, S: Store<V>> SparseMerkleTree<H, V, S> {
         for height in 0..=core::u8::MAX {
             let parent_key = current_key.parent_path(height);
             let parent_branch_key = BranchKey::new(height, parent_key);
-            let (left, right) =
-                if let Some(parent_branch) = self.store.get_branch(&parent_branch_key)? {
-                    if current_key.is_right(height) {
-                        (parent_branch.left, current_node)
-                    } else {
-                        (current_node, parent_branch.right)
-                    }
-                } else if current_key.is_right(height) {
-                    (MergeValue::zero(), current_node)
+            let (left, right) = if let Some(parent_branch) =
+                self.store.get_branch(&parent_branch_key)?
+            {
+                if current_key.is_right(height) {
+                    (parent_branch.left, current_node)
                 } else {
-                    (current_node, MergeValue::zero())
-                };
+                    (current_node, parent_branch.right)
+                }
+            } else if current_key.is_right(height) {
+                (MergeValue::zero(), current_node)
+            } else {
+                (current_node, MergeValue::zero())
+            };
 
             if !left.is_zero() || !right.is_zero() {
                 // insert or update branch
@@ -178,7 +179,10 @@ impl<H: Hasher, V: Value<H>, S: Store<V>> SparseMerkleTree<H, V, S> {
         self.hash_recompute_all(nodes)
     }
 
-    fn hash_recompute_all(&mut self, mut nodes: Vec<(H256, MergeValue)>) -> Result<H256> {
+    fn hash_recompute_all(
+        &mut self,
+        mut nodes: Vec<(H256, MergeValue)>,
+    ) -> Result<H256> {
         for height in 0..=core::u8::MAX {
             let mut next_nodes: Vec<(H256, MergeValue)> = Vec::new();
             let mut i = 0;
@@ -204,7 +208,9 @@ impl<H: Hasher, V: Value<H>, S: Store<V>> SparseMerkleTree<H, V, S> {
                     (current_merge_value.clone(), right_merge_value)
                 } else {
                     // In case neighbor is not available, fetch from store
-                    if let Some(parent_branch) = self.store.get_branch(&parent_branch_key)? {
+                    if let Some(parent_branch) =
+                        self.store.get_branch(&parent_branch_key)?
+                    {
                         if current_key.is_right(height) {
                             (parent_branch.left, current_merge_value.clone())
                         } else {
@@ -228,7 +234,8 @@ impl<H: Hasher, V: Value<H>, S: Store<V>> SparseMerkleTree<H, V, S> {
                 } else {
                     self.store.remove_branch(&parent_branch_key)?;
                 }
-                next_nodes.push((parent_key, merge::<H>(height, &parent_key, &left, &right)));
+                next_nodes
+                    .push((parent_key, merge::<H>(height, &parent_key, &left, &right)));
             }
             nodes = next_nodes;
         }
@@ -317,7 +324,9 @@ impl<H: Hasher, V: Value<H>, S: Store<V>> SparseMerkleTree<H, V, S> {
                     stack_top -= 1;
                 } else if leaves_bitmap[leaf_index].get_bit(height) {
                     let parent_branch_key = BranchKey::new(height, parent_key);
-                    if let Some(parent_branch) = self.store.get_branch(&parent_branch_key)? {
+                    if let Some(parent_branch) =
+                        self.store.get_branch(&parent_branch_key)?
+                    {
                         let sibling = if is_right {
                             parent_branch.left
                         } else {
@@ -424,18 +433,19 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store<H256>, S2: Store2<X, V>>
         for height in 0..=core::u8::MAX {
             let parent_key = current_key.parent_path(height);
             let parent_branch_key = BranchKey::new(height, parent_key);
-            let (left, right) =
-                if let Some(parent_branch) = self.store.get_branch(xid, &parent_branch_key)? {
-                    if current_key.is_right(height) {
-                        (parent_branch.left, current_node)
-                    } else {
-                        (current_node, parent_branch.right)
-                    }
-                } else if current_key.is_right(height) {
-                    (MergeValue::zero(), current_node)
+            let (left, right) = if let Some(parent_branch) =
+                self.store.get_branch(xid, &parent_branch_key)?
+            {
+                if current_key.is_right(height) {
+                    (parent_branch.left, current_node)
                 } else {
-                    (current_node, MergeValue::zero())
-                };
+                    (current_node, parent_branch.right)
+                }
+            } else if current_key.is_right(height) {
+                (MergeValue::zero(), current_node)
+            } else {
+                (current_node, MergeValue::zero())
+            };
 
             if !left.is_zero() || !right.is_zero() {
                 // insert or update branch
@@ -504,7 +514,11 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store<H256>, S2: Store2<X, V>>
         Ok(new_root)
     }
 
-    fn hash_recompute_all(&mut self, xid: &X, mut nodes: Vec<(H256, MergeValue)>) -> Result<H256> {
+    fn hash_recompute_all(
+        &mut self,
+        xid: &X,
+        mut nodes: Vec<(H256, MergeValue)>,
+    ) -> Result<H256> {
         for height in 0..=core::u8::MAX {
             let mut next_nodes: Vec<(H256, MergeValue)> = Vec::new();
             let mut i = 0;
@@ -530,7 +544,9 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store<H256>, S2: Store2<X, V>>
                     (current_merge_value.clone(), right_merge_value)
                 } else {
                     // In case neighbor is not available, fetch from store
-                    if let Some(parent_branch) = self.store.get_branch(xid, &parent_branch_key)? {
+                    if let Some(parent_branch) =
+                        self.store.get_branch(xid, &parent_branch_key)?
+                    {
                         if current_key.is_right(height) {
                             (parent_branch.left, current_merge_value.clone())
                         } else {
@@ -555,7 +571,8 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store<H256>, S2: Store2<X, V>>
                 } else {
                     self.store.remove_branch(xid, &parent_branch_key)?;
                 }
-                next_nodes.push((parent_key, merge::<H>(height, &parent_key, &left, &right)));
+                next_nodes
+                    .push((parent_key, merge::<H>(height, &parent_key, &left, &right)));
             }
             nodes = next_nodes;
         }
@@ -574,7 +591,12 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store<H256>, S2: Store2<X, V>>
     }
 
     #[inline(always)]
-    pub fn get_by_branch(&self, xid: &X, key: &H256, br: BranchName) -> Result<Option<V>> {
+    pub fn get_by_branch(
+        &self,
+        xid: &X,
+        key: &H256,
+        br: BranchName,
+    ) -> Result<Option<V>> {
         self.store.get_leaf_by_branch(xid, key, br)
     }
 
@@ -611,7 +633,9 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store<H256>, S2: Store2<X, V>>
             for height in 0..=core::u8::MAX {
                 let parent_key = current_key.parent_path(height);
                 let parent_branch_key = BranchKey::new(height, parent_key);
-                if let Some(parent_branch) = self.store.get_branch(xid, &parent_branch_key)? {
+                if let Some(parent_branch) =
+                    self.store.get_branch(xid, &parent_branch_key)?
+                {
                     let sibling = if current_key.is_right(height) {
                         parent_branch.left
                     } else {
@@ -651,7 +675,9 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store<H256>, S2: Store2<X, V>>
                     stack_top -= 1;
                 } else if leaves_bitmap[leaf_index].get_bit(height) {
                     let parent_branch_key = BranchKey::new(height, parent_key);
-                    if let Some(parent_branch) = self.store.get_branch(xid, &parent_branch_key)? {
+                    if let Some(parent_branch) =
+                        self.store.get_branch(xid, &parent_branch_key)?
+                    {
                         let sibling = if is_right {
                             parent_branch.left
                         } else {

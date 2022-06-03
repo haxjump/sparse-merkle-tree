@@ -5,7 +5,7 @@ lint:
 	cargo clippy --workspace --no-default-features
 
 fmt:
-	cargo fmt
+	cargo +nightly fmt
 
 test:
 	rm -rf ~/.vsdb ${VSDB_BASE_DIR}

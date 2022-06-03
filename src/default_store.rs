@@ -8,7 +8,9 @@ use crate::{
 use ruc::*;
 use serde::{Deserialize, Serialize};
 use std::result::Result as StdResult;
-use vsdb::{BranchName, KeyEnDe, MapxDkVs, MapxVs, OrphanVs, ValueEnDe, VersionName, Vs, VsMgmt};
+use vsdb::{
+    BranchName, KeyEnDe, MapxDkVs, MapxVs, OrphanVs, ValueEnDe, VersionName, Vs, VsMgmt,
+};
 
 #[derive(Vs, Debug, Clone, Deserialize, Serialize)]
 #[serde(bound = "")]
@@ -33,7 +35,11 @@ impl<V: ValueEnDe> Default for DefaultStore<V> {
 
 impl<V: ValueEnDe> Store<V> for DefaultStore<V> {
     #[inline(always)]
-    fn insert_branch(&mut self, branch_key: BranchKey, branch: BranchNode) -> StdResult<(), Error> {
+    fn insert_branch(
+        &mut self,
+        branch_key: BranchKey,
+        branch: BranchNode,
+    ) -> StdResult<(), Error> {
         chg_store!(self.branches_map.insert(branch_key, branch));
         Ok(())
     }
@@ -45,7 +51,10 @@ impl<V: ValueEnDe> Store<V> for DefaultStore<V> {
     }
 
     #[inline(always)]
-    fn get_branch(&self, branch_key: &BranchKey) -> StdResult<Option<BranchNode>, Error> {
+    fn get_branch(
+        &self,
+        branch_key: &BranchKey,
+    ) -> StdResult<Option<BranchNode>, Error> {
         Ok(self.branches_map.get(branch_key))
     }
 
@@ -67,7 +76,11 @@ impl<V: ValueEnDe> Store<V> for DefaultStore<V> {
     }
 
     #[inline(always)]
-    fn get_leaf_by_branch(&self, leaf_key: &H256, br: BranchName) -> StdResult<Option<V>, Error> {
+    fn get_leaf_by_branch(
+        &self,
+        leaf_key: &H256,
+        br: BranchName,
+    ) -> StdResult<Option<V>, Error> {
         Ok(self.leaves_map.get_by_branch(leaf_key, br))
     }
 
@@ -133,7 +146,11 @@ impl<X: KeyEnDe, V: ValueEnDe> Store2<X, V> for DefaultStore2<X, V> {
     }
 
     #[inline(always)]
-    fn get_branch(&self, xid: &X, branch_key: &BranchKey) -> StdResult<Option<BranchNode>, Error> {
+    fn get_branch(
+        &self,
+        xid: &X,
+        branch_key: &BranchKey,
+    ) -> StdResult<Option<BranchNode>, Error> {
         Ok(self.branches_map.get(&(xid, branch_key)))
     }
 

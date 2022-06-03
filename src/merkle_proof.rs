@@ -67,7 +67,8 @@ impl MerkleProof {
 
         let (leaves_bitmap, merkle_path) = self.take();
 
-        let mut proof: Vec<u8> = Vec::with_capacity(merkle_path.len() * 33 + leaves_keys.len());
+        let mut proof: Vec<u8> =
+            Vec::with_capacity(merkle_path.len() * 33 + leaves_keys.len());
         let mut stack_fork_height = [0u8; MAX_STACK_SIZE]; // store fork height
         let mut stack_top = 0;
         let mut leaf_index = 0;
@@ -97,7 +98,9 @@ impl MerkleProof {
                         let node = &merkle_path[merkle_path_index];
                         merkle_path_index += 1;
                         match node {
-                            MergeValue::Value(v) => (Some(0x50), Some(v.as_slice().to_vec())),
+                            MergeValue::Value(v) => {
+                                (Some(0x50), Some(v.as_slice().to_vec()))
+                            }
                             MergeValue::MergeWithZero {
                                 base_node,
                                 zero_bits,
@@ -256,12 +259,16 @@ impl CompiledMerkleProof {
                     let zero_count = self.0[program_index];
                     let base_node = {
                         let mut data = [0u8; 32];
-                        data.copy_from_slice(&self.0[program_index + 1..program_index + 33]);
+                        data.copy_from_slice(
+                            &self.0[program_index + 1..program_index + 33],
+                        );
                         H256::from(data)
                     };
                     let zero_bits = {
                         let mut data = [0u8; 32];
-                        data.copy_from_slice(&self.0[program_index + 33..program_index + 65]);
+                        data.copy_from_slice(
+                            &self.0[program_index + 33..program_index + 65],
+                        );
                         H256::from(data)
                     };
                     program_index += 65;

@@ -1,7 +1,8 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use rand::{thread_rng, Rng};
 use xsmt::{
-    blake3_hasher::Blake3Hasher, default_store::DefaultStore, tree::SparseMerkleTree, H256,
+    blake3_hasher::Blake3Hasher, default_store::DefaultStore, tree::SparseMerkleTree,
+    H256,
 };
 
 const TARGET_LEAVES_COUNT: usize = 20;
