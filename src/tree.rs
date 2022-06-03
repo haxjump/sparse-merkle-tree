@@ -44,7 +44,7 @@ pub struct BranchNode {
 }
 
 /// Sparse merkle tree
-#[derive(Vs, Default, Debug, Deserialize, Serialize)]
+#[derive(Vs, Clone, Default, Debug, Deserialize, Serialize)]
 pub struct SparseMerkleTree<H, V, S: VsMgmt> {
     store: S,
     phantom: PhantomData<(H, V)>,
@@ -337,7 +337,7 @@ impl<H: Hasher, V: Value<H>, S: Store<V>> SparseMerkleTree<H, V, S> {
 
 /// Sparse merkle tree,
 /// useful in some double-key scenes.
-#[derive(Vs, Default, Debug)]
+#[derive(Vs, Clone, Default, Debug, Deserialize, Serialize)]
 pub struct SparseMerkleTree2<X, H, V, S: VsMgmt> {
     store: S,
     phantom: PhantomData<(X, H, V)>,
