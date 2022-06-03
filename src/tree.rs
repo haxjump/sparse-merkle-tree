@@ -104,7 +104,7 @@ impl<H: Hasher, V: Value<H>, S: Store<V>> SparseMerkleTree<H, V, S> {
         // recompute the tree from bottom to top
         let mut current_key = key;
         let mut current_node = node;
-        for height in 0..=core::u8::MAX {
+        for height in 0..=u8::MAX {
             let parent_key = current_key.parent_path(height);
             let parent_branch_key = BranchKey::new(height, parent_key);
             let (left, right) = if let Some(parent_branch) =
@@ -183,7 +183,11 @@ impl<H: Hasher, V: Value<H>, S: Store<V>> SparseMerkleTree<H, V, S> {
         &mut self,
         mut nodes: Vec<(H256, MergeValue)>,
     ) -> Result<H256> {
-        for height in 0..=core::u8::MAX {
+        if nodes.is_empty() {
+            return self.store.get_root();
+        }
+
+        for height in 0..=u8::MAX {
             let mut next_nodes: Vec<(H256, MergeValue)> = Vec::new();
             let mut i = 0;
             while i < nodes.len() {
@@ -281,7 +285,7 @@ impl<H: Hasher, V: Value<H>, S: Store<V>> SparseMerkleTree<H, V, S> {
         let mut leaves_bitmap: Vec<H256> = Default::default();
         for current_key in &keys {
             let mut bitmap = H256::zero();
-            for height in 0..=core::u8::MAX {
+            for height in 0..=u8::MAX {
                 let parent_key = current_key.parent_path(height);
                 let parent_branch_key = BranchKey::new(height, parent_key);
                 if let Some(parent_branch) = self.store.get_branch(&parent_branch_key)? {
@@ -309,7 +313,7 @@ impl<H: Hasher, V: Value<H>, S: Store<V>> SparseMerkleTree<H, V, S> {
             let fork_height = if leaf_index + 1 < keys.len() {
                 leaf_key.fork_height(&keys[leaf_index + 1])
             } else {
-                core::u8::MAX
+                u8::MAX
             };
             for height in 0..=fork_height {
                 if height == fork_height && leaf_index + 1 < keys.len() {
@@ -430,7 +434,7 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store<H256>, S2: Store2<X, V>>
         // recompute the tree from bottom to top
         let mut current_key = key;
         let mut current_node = node;
-        for height in 0..=core::u8::MAX {
+        for height in 0..=u8::MAX {
             let parent_key = current_key.parent_path(height);
             let parent_branch_key = BranchKey::new(height, parent_key);
             let (left, right) = if let Some(parent_branch) =
@@ -519,7 +523,11 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store<H256>, S2: Store2<X, V>>
         xid: &X,
         mut nodes: Vec<(H256, MergeValue)>,
     ) -> Result<H256> {
-        for height in 0..=core::u8::MAX {
+        if nodes.is_empty() {
+            return self.store.get_root(xid);
+        }
+
+        for height in 0..=u8::MAX {
             let mut next_nodes: Vec<(H256, MergeValue)> = Vec::new();
             let mut i = 0;
             while i < nodes.len() {
@@ -630,7 +638,7 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store<H256>, S2: Store2<X, V>>
         let mut leaves_bitmap: Vec<H256> = Default::default();
         for current_key in &keys {
             let mut bitmap = H256::zero();
-            for height in 0..=core::u8::MAX {
+            for height in 0..=u8::MAX {
                 let parent_key = current_key.parent_path(height);
                 let parent_branch_key = BranchKey::new(height, parent_key);
                 if let Some(parent_branch) =
@@ -660,7 +668,7 @@ impl<X: KeyEnDe, H: Hasher, V: Value<H>, S: Store<H256>, S2: Store2<X, V>>
             let fork_height = if leaf_index + 1 < keys.len() {
                 leaf_key.fork_height(&keys[leaf_index + 1])
             } else {
-                core::u8::MAX
+                u8::MAX
             };
             for height in 0..=fork_height {
                 if height == fork_height && leaf_index + 1 < keys.len() {

@@ -8,8 +8,10 @@ use crate::{
 use ruc::*;
 use serde::{Deserialize, Serialize};
 use std::result::Result as StdResult;
+#[cfg(test)]
+use vsdb::VsMgmt;
 use vsdb::{
-    BranchName, KeyEnDe, MapxDkVs, MapxVs, OrphanVs, ValueEnDe, VersionName, Vs, VsMgmt,
+    BranchName, KeyEnDe, MapxDkVs, MapxVs, OrphanVs, ValueEnDe, VersionName, Vs,
 };
 
 #[derive(Vs, Debug, Clone, Deserialize, Serialize)]
@@ -22,13 +24,19 @@ pub struct DefaultStore<V: ValueEnDe> {
 
 impl<V: ValueEnDe> Default for DefaultStore<V> {
     #[inline(always)]
+    #[allow(clippy::let_and_return)]
     fn default() -> Self {
         let ds = Self {
             root: OrphanVs::new(),
             branches_map: MapxVs::new(),
             leaves_map: MapxVs::new(),
         };
-        pnk!(ds.version_create((&[0u8; 0][..]).into()));
+
+        #[cfg(test)]
+        {
+            pnk!(ds.version_create((&[0u8; 0][..]).into()));
+        }
+
         ds
     }
 }
@@ -116,13 +124,19 @@ pub struct DefaultStore2<X: KeyEnDe, V: ValueEnDe> {
 
 impl<X: KeyEnDe, V: ValueEnDe> Default for DefaultStore2<X, V> {
     #[inline(always)]
+    #[allow(clippy::let_and_return)]
     fn default() -> Self {
         let ds = Self {
             root: MapxVs::new(),
             branches_map: MapxDkVs::new(),
             leaves_map: MapxDkVs::new(),
         };
-        pnk!(ds.version_create((&[0u8; 0][..]).into()));
+
+        #[cfg(test)]
+        {
+            pnk!(ds.version_create((&[0u8; 0][..]).into()));
+        }
+
         ds
     }
 }
