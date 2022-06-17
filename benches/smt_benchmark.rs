@@ -33,7 +33,8 @@ fn random_smt(update_count: usize, rng: &mut impl Rng) -> (SMT, Vec<H256>) {
         keys.push(key);
     }
 
-    let file = File::create(format!("/tmp/xsmt_benchmark_{}.svg", update_count)).unwrap();
+    let file =
+        File::create(format!("/tmp/xsmt_benchmark_{}.svg", update_count)).unwrap();
     guard.report().build().unwrap().flamegraph(file).unwrap();
 
     (smt, keys)

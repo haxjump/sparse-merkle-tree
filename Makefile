@@ -3,6 +3,7 @@ default: fmt lint test
 lint:
 	cargo clippy --workspace
 	cargo clippy --workspace --no-default-features
+	cargo clippy --workspace --tests
 
 fmt:
 	cargo +nightly fmt

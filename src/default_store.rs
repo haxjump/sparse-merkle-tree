@@ -23,19 +23,26 @@ pub struct DefaultStore<V: ValueEnDe> {
 }
 
 impl<V: ValueEnDe> Default for DefaultStore<V> {
+    #[cfg(not(test))]
     #[inline(always)]
-    #[allow(clippy::let_and_return)]
     fn default() -> Self {
-        let ds = Self {
+        Self {
+            root: OrphanVs::new(),
+            branches_map: MapxVs::new(),
+            leaves_map: MapxVs::new(),
+        }
+    }
+
+    #[cfg(test)]
+    #[inline(always)]
+    fn default() -> Self {
+        let mut ds = Self {
             root: OrphanVs::new(),
             branches_map: MapxVs::new(),
             leaves_map: MapxVs::new(),
         };
 
-        #[cfg(test)]
-        {
-            pnk!(ds.version_create((&[0u8; 0][..]).into()));
-        }
+        pnk!(ds.version_create((&[0u8; 0][..]).into()));
 
         ds
     }
@@ -48,7 +55,7 @@ impl<V: ValueEnDe> Store<V> for DefaultStore<V> {
         branch_key: BranchKey,
         branch: BranchNode,
     ) -> StdResult<(), Error> {
-        chg_store!(self.branches_map.insert(branch_key, branch));
+        chg_store!(self.branches_map.insert(&branch_key, &branch));
         Ok(())
     }
 
@@ -68,7 +75,7 @@ impl<V: ValueEnDe> Store<V> for DefaultStore<V> {
 
     #[inline(always)]
     fn insert_leaf(&mut self, leaf_key: H256, leaf: V) -> StdResult<(), Error> {
-        chg_store!(self.leaves_map.insert(leaf_key, leaf));
+        chg_store!(self.leaves_map.insert(&leaf_key, &leaf));
         Ok(())
     }
 
@@ -104,7 +111,7 @@ impl<V: ValueEnDe> Store<V> for DefaultStore<V> {
 
     #[inline(always)]
     fn update_root(&mut self, new_root: H256) -> StdResult<(), Error> {
-        chg_store!(self.root.set_value(new_root));
+        chg_store!(self.root.set_value(&new_root));
         Ok(())
     }
 
@@ -123,19 +130,26 @@ pub struct DefaultStore2<X: KeyEnDe, V: ValueEnDe> {
 }
 
 impl<X: KeyEnDe, V: ValueEnDe> Default for DefaultStore2<X, V> {
+    #[cfg(not(test))]
     #[inline(always)]
-    #[allow(clippy::let_and_return)]
     fn default() -> Self {
-        let ds = Self {
+        Self {
+            root: MapxVs::new(),
+            branches_map: MapxDkVs::new(),
+            leaves_map: MapxDkVs::new(),
+        }
+    }
+
+    #[cfg(test)]
+    #[inline(always)]
+    fn default() -> Self {
+        let mut ds = Self {
             root: MapxVs::new(),
             branches_map: MapxDkVs::new(),
             leaves_map: MapxDkVs::new(),
         };
 
-        #[cfg(test)]
-        {
-            pnk!(ds.version_create((&[0u8; 0][..]).into()));
-        }
+        pnk!(ds.version_create((&[0u8; 0][..]).into()));
 
         ds
     }
@@ -149,7 +163,7 @@ impl<X: KeyEnDe, V: ValueEnDe> Store2<X, V> for DefaultStore2<X, V> {
         node_key: BranchKey,
         branch: BranchNode,
     ) -> StdResult<(), Error> {
-        chg_store!(self.branches_map.insert_ref(&(xid, &node_key), &branch));
+        chg_store!(self.branches_map.insert(&(xid, &node_key), &branch));
         Ok(())
     }
 
@@ -170,7 +184,7 @@ impl<X: KeyEnDe, V: ValueEnDe> Store2<X, V> for DefaultStore2<X, V> {
 
     #[inline(always)]
     fn insert_leaf(&mut self, xid: &X, leaf_key: H256, leaf: V) -> StdResult<(), Error> {
-        chg_store!(self.leaves_map.insert_ref(&(xid, &leaf_key), &leaf));
+        chg_store!(self.leaves_map.insert(&(xid, &leaf_key), &leaf));
         Ok(())
     }
 
@@ -219,7 +233,7 @@ impl<X: KeyEnDe, V: ValueEnDe> Store2<X, V> for DefaultStore2<X, V> {
 
     #[inline(always)]
     fn update_root(&mut self, xid: &X, new_root: H256) -> StdResult<(), Error> {
-        chg_store!(self.root.insert_ref(xid, &new_root));
+        chg_store!(self.root.insert(xid, &new_root));
         Ok(())
     }
 

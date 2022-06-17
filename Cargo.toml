@@ -1,6 +1,6 @@
 [package]
 name = "xsmt"
-version = "3.0.6"
+version = "3.0.7"
 authors = ["mlm"]
 edition = "2021"
 license = "GPL-3.0"
@@ -13,7 +13,8 @@ exclude = ["/proptest-regressions"]
 blake3 = "1.3.1"
 serde = { version = "1.0.137", features = ["derive"] }
 ruc = "1.0"
-vsdb = "0.41.1"
+# vsdb = { path = "../vsdb/wrappers" }
+vsdb = "0.43.2"
 
 pt11 = { package = "primitive-types", version = "0.11" }
 pt10 = { package = "primitive-types", version = "0.10" }
